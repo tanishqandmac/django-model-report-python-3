@@ -1,18 +1,38 @@
 {% if form_groupby or form_filter or form_config %}
+
 <div class="form_filter">
     <form method="GET" action="{{ request.path }}">
+      <div class="row">
+        <div class="col-sm-3 mrg15A">
     {% include "model_report/includes/form_groupby.html" %}
+    </div>
+      <div class="col-sm-4 mrg15A">
     {% include "model_report/includes/form_filter.html" %}
+    </div>
+      <div class="col-sm-3 mrg15A">
     {% include "model_report/includes/form_config.html" %}
-    <p class="actions">
-        <button type="submit" class="query">{{ submit_label|default:_("Get results") }}</button>
+    </div>
+    </div>
+    <hr>
+    <p class="actions" >
+      <div class="row">
+        <div class="col-md-3">
+        <button type="submit" class="btn btn-info btn-block query mr-1">{{ submit_label|default:_("Get results") }}</button>
+        </div>
         {% if report_rows %}
         {% for export in report.exports %}
-        <button type="submit" class="{{ export }}" name="export" value="{{ export }}">{{ export|title }}</button>
+        <div class="col-md-3">
+        <button type="submit" class="btn btn-primary btn-block {{ export }} mr-1" name="export" value="{{ export }}">{{ export|title }}</button>
+        </div>
         {% endfor %}
-        <button type="button" class="print" onclick="javascript:window.print()">{{ submit_label|default:_("Print") }}</button>
+        <div class="col-md-3">
+        <button type="button" class="btn btn-success btn-block print mr-1" onclick="javascript:window.print()">{{ submit_label|default:_("Print") }}</button>
+        </div>
         {% endif %}
+        </div>
     </p>
+    <hr>
     </form>
 </div>
+
 {% endif %}

@@ -22,8 +22,8 @@ class ConfigForm(forms.Form):
     )
 
     chart_mode = forms.ChoiceField(label=_('Chart type'), choices=(), required=False)
-    serie_field = forms.ChoiceField(label=_('Serie field'), choices=(), required=False)
-    serie_op = forms.ChoiceField(label=_('Serie operator'), choices=CHART_SERIE_OPERATOR, required=False)
+    serie_field = forms.ChoiceField(label=_('Series field'), choices=(), required=False)
+    serie_op = forms.ChoiceField(label=_('Series operator'), choices=CHART_SERIE_OPERATOR, required=False)
 
     def __init__(self, *args, **kwargs):
         super(ConfigForm, self).__init__(*args, **kwargs)
@@ -70,7 +70,7 @@ class GroupByForm(forms.Form):
     def get_cleaned_data(self):
         cleaned_data = getattr(self, 'cleaned_data', {})
         if 'groupby' in cleaned_data:
-            if unicode(cleaned_data['groupby']) == u'None':
+            if 'groupby' == 'None':
                 cleaned_data['groupby'] = None
         return cleaned_data
 

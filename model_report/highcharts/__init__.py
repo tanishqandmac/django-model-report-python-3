@@ -1,8 +1,18 @@
 # -*- coding: utf-8 -*-
-from django.utils.encoding import force_unicode
 from django.utils.translation import ugettext_lazy as _
 from model_report.highcharts.base import true, false, null, DictObject
 from model_report.highcharts.options import get_highchart_data
+
+
+from bs4 import BeautifulSoup
+import cgi
+
+def HTMLEntitiesToUnicode(text):
+    """
+    Converts HTML entities to unicode.  For example '&amp;' becomes '&'.
+    """
+    text = str(BeautifulSoup(text, ["lxml"]))
+    return text
 
 
 def is_numeric(value):
@@ -12,20 +22,8 @@ def is_numeric(value):
         return False
     return True
 
-try:
-    from BeautifulSoup import BeautifulStoneSoup
-except ImportError:
-    from bs4 import BeautifulStoneSoup
-
-import cgi
 
 
-def HTMLEntitiesToUnicode(text):
-    """
-    Converts HTML entities to unicode.  For example '&amp;' becomes '&'.
-    """
-    text = unicode(BeautifulStoneSoup(text, convertEntities=BeautifulStoneSoup.ALL_ENTITIES))
-    return text
 
 
 def unicodeToHTMLEntities(text):
@@ -33,7 +31,7 @@ def unicodeToHTMLEntities(text):
     Converts unicode to HTML entities.  For example '&' becomes '&amp;'.
     """
     if text is None:
-        text = force_unicode(_('None'))
+        text = 'None'
     text = cgi.escape(text).encode('ascii', 'xmlcharrefreplace')
     return text
 
@@ -56,7 +54,7 @@ class HighchartRender(object):
             'avg': lambda vlist: sum(vlist) / len(vlist)
         }
         serie_operation = funcs_op[self.config['serie_op']]
-
+        grouper = None
         serie_data = []
         for grouper, rows in report_rows:
             add_group = True
@@ -89,7 +87,7 @@ class HighchartRender(object):
         self.model.chart.plotShadow = false
 
         self.model.title.text = self.config['title']
-        self.model.tooltip.formatter = "function() { return roundVal(this.percentage) + ' %'; }"
+        self.model.tooltip.formatter = "function() { return parseInt(this.percentage) + ' %'; }"
 
         self.model.plotOptions.pie.allowPointSelect = true
         self.model.plotOptions.pie.cursor = 'pointer'
@@ -205,26 +203,30 @@ class HighchartRender(object):
 
     def get_chart(self, report_rows):
         self.reset()
-        if report_rows and self.is_valid():
-            if self.config['chart_mode'] == 'pie':
-                self.model.credits.enabled = false
-                self.set_pie_chart_options(report_rows)
-            if self.config['chart_mode'] == 'column':
-                self.model.credits.enabled = false
-                self.set_bar_chart_options(report_rows)
-            if self.config['chart_mode'] == 'line':
-                self.model.credits.enabled = false
-                self.set_line_chart_options(report_rows)
+        if self.config['chart_mode'] == 'pie':
+            self.model.credits.enabled = false
+            self.set_pie_chart_options(report_rows)
+        if self.config['chart_mode'] == 'column':
+            self.model.credits.enabled = false
+            self.set_bar_chart_options(report_rows)
+        if self.config['chart_mode'] == 'line':
+            self.model.credits.enabled = false
+            self.set_line_chart_options(report_rows)
         return self
 
     @property
     def options(self):
+        from django.forms.models import model_to_dict
+
         try:
             from django.utils import simplejson
         except ImportError:
             import json as simplejson
+        import sys
+        if sys.version_info[0] >= 3:
+            unicode = str
 
-        json = unicode(self.model)
+        json = self.model.__repr__()
         json = simplejson.dumps(json)[1:-1]
         json = json.replace("'true'", 'true')
         json = json.replace("'false'", 'false')
@@ -234,5 +236,7 @@ class HighchartRender(object):
         json = json.replace('[{', '[\n\t{')
         json = json.replace('}]', '}\n]')
         json = json.replace("u'", "'")
-        json = HTMLEntitiesToUnicode(json)
+        json = json.replace("b'", "'")
+        print (json)
+        # json = HTMLEntitiesToUnicode(json)
         return json

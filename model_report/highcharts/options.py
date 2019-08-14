@@ -166,7 +166,7 @@ def get_highchart_data():
         'offset': 0,
         'opposite': false,
         'plotBands': [{}],
-        'plotLines': CollectionObject(),
+        'plotLines': CollectionObject().__repr__,
         'reversed': false,
         'showFirstLabel': true,
         'startOfWeek': 1,
@@ -368,7 +368,7 @@ def get_highchart_data():
         'tooltip': {},
         'turboThreshold': 1000,
         'visible': true,
-        'zIndex': null,
+        'zIndex': null
     }
 
     plotOptionsData = {
@@ -447,5 +447,4 @@ def get_highchart_data():
         serie_obj=DictObject(**SeriesData),
         yAxisplot_obj=DictObject(**yAxisPlotData),
     )
-
     return HighchartData

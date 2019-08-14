@@ -10,17 +10,37 @@
     <script src="{{ STATIC_URL }}model_report/js/jquery-1.6.2.min.js" type="text/javascript"></script>
     <script src="{{ STATIC_URL }}model_report/js/jquery-ui-1.8.16.custom.min.js" type="text/javascript"></script>
 
-    {% if chart %}
-        <script type="text/javascript" src="{{ STATIC_URL }}model_report/js/highcharts/js/highcharts.js"></script>
+
+        <script type="text/javascript" src="https://code.highcharts.com/highcharts.js"></script>
         <script type="text/javascript">
-            var chart;
-            var subtitle_text_mouse = '{% trans "Click and drag in the plot area to zoom in" %}';
-            var subtitle_text_touch = '{% trans "Drag your finger over the plot to zoom in" %}';
+          var chart;
+            var subtitle_text_mouse = 'Click and drag in the plot area to zoom in';
+            var subtitle_text_touch = 'Drag your finger over the plot to zoom in';
             $(document).ready(function() {
-                chart = new Highcharts.Chart({{ chart.options|safe }});
+                chart = new Highcharts.Chart({'tooltip': {'enabled': true, 'formatter': function() { return '<b>'+this.series.name+'</b> '+this.x+': '+this.y; }},
+	 'xAxis': {'categories': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]},
+	 'chart': {'renderTo': 'container', 'type': 'line'},
+	 'series': [
+	{'name': 'Chrome', 'data': [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]},
+	 {'name': 'Firefox', 'data': [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]},
+	 {'name': 'Internet Explorer', 'data': [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]},
+	 {'name': 'Opera', 'data': [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]},
+	 {'name': 'i18n...', 'data': [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]}
+], 'credits': {'enabled': false},
+	 'title': {'text': 'Browser downloads'},
+	 'plotOptions': {'line': {'dataLabels': {'edabled': true},
+	 'enableMouseTracking': false}},
+	 'yAxis': {'plotLines': [], 'title': {'text': 'USD'}}});
             });
+
+            // var chart;
+            // var subtitle_text_mouse = '{% trans "Click and drag in the plot area to zoom in" %}';
+            // var subtitle_text_touch = '{% trans "Drag your finger over the plot to zoom in" %}';
+            // $(document).ready(function() {
+            //     chart = new Highcharts.Chart({{ chart.options|safe }});
+            // });
         </script>
-    {% endif %}
+
     <script type="text/javascript">
     Number.prototype.formatMoney = function(c, d, t) {
 
@@ -86,6 +106,7 @@
 
 {% block content %}
 {% include "model_report/includes/report_title.html" %}
+<hr>
 {% include "model_report/includes/form_report.html" %}
 
 {% if report_rows %}
@@ -100,6 +121,7 @@
                 <option value="{{ anchor|slugify }}">{{ anchor }}</option>
             {% endfor %}
         </select>
+
     {% endif %}
 
     {% include "model_report/includes/report_table.html" %}

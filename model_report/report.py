@@ -9,7 +9,6 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.utils.translation import ugettext_lazy as _
 from django.db.models.fields import DateTimeField, DateField
-from django.utils.encoding import force_unicode
 from django.db.models import Q
 from django import forms
 from django.forms.models import fields_for_model
@@ -243,24 +242,24 @@ class ReportAdmin(object):
                     base_model = self.model
                     for field_lookup in field.split("__"):
                         if not pre_field:
-                            pre_field, _, _, is_m2m = base_model._meta.get_field_by_name(field_lookup)
+                            pre_field, _, _, is_m2m = base_model._meta.get_field(field_lookup)
                             if is_m2m:
                                 m2mfields.append(pre_field)
                         elif isinstance(pre_field, ForeignObjectRel):
                             base_model = pre_field.model
-                            pre_field = base_model._meta.get_field_by_name(field_lookup)[0]
+                            pre_field = base_model._meta.get_field(field_lookup)
                         else:
                             if is_date_field(pre_field):
                                 pre_field = pre_field
                             else:
                                 base_model = pre_field.rel.to
-                                pre_field = base_model._meta.get_field_by_name(field_lookup)[0]
+                                pre_field = base_model._meta.get_field(field_lookup)
                     model_field = pre_field
                 else:
                     if field in self.extra_fields:
                         model_field = self.extra_fields[field]
                     elif not 'self.' in field:
-                        model_field = self.model._meta.get_field_by_name(field)[0]
+                        model_field = self.model._meta.get_field(field)
                     else:
                         get_attr = lambda s: getattr(s, field.split(".")[1])
                         get_attr.verbose_name = field
@@ -270,21 +269,21 @@ class ReportAdmin(object):
             model_fields.append([model_field, field])
             if m2mfields:
                 model_m2m_fields.append([model_field, field, len(model_fields) - 1, m2mfields])
+
         self.model_fields = model_fields
         self.model_m2m_fields = model_m2m_fields
         if parent_report:
-            self.related_inline_field = [f for f, x in self.model._meta.get_fields_with_model() if f.rel and hasattr(f.rel, 'to') and f.rel.to is self.parent_report.model][0]
+            self.related_inline_field = [f for f, x in self.model._meta.get_fields() if f.remote_field and hasattr(f.remote_field, 'to') and f.remote_field.to is self.parent_report.model][0]
             self.related_inline_accessor = self.related_inline_field.related.get_accessor_name()
             self.related_fields = ["%s__%s" % (get_model_name(pfield.model), attname) for pfield, attname in self.parent_report.model_fields if not isinstance(pfield, (str, unicode)) and  pfield.model == self.related_inline_field.rel.to]
             self.related_inline_filters = []
-
             for pfield, pattname in self.parent_report.model_fields:
                 for cfield, cattname in self.model_fields:
                     try:
                         if pattname in cattname:
                             if pfield.model == cfield.model:
                                 self.related_inline_filters.append([pattname, cattname, self.parent_report.get_fields().index(pattname)])
-                    except Exception, e:
+                    except Exception as e:
                         pass
 
 
@@ -294,11 +293,11 @@ class ReportAdmin(object):
         except:
             model_field = None
         value = self.get_grouper_text(value, groupby_field, model_field)
-        if value is None or unicode(value) == u'None':
-            if groupby_field is None or unicode(groupby_field) == u'None':
-                value = force_unicode(_('Results'))
+        if value is None or value == 'None':
+            if groupby_field is None or groupby_field == 'None':
+                value = 'Results'
             else:
-                value = force_unicode(_('Nothing'))
+                value = 'Nothing'
         return value
 
     def _get_value_text(self, index, value):
@@ -308,7 +307,7 @@ class ReportAdmin(object):
             model_field = None
 
         value = self.get_value_text(value, index, model_field)
-        if value is None or unicode(value) == u'None':
+        if value is None or value == 'None':
             value = ''
         if value == [None]:
             value = []
@@ -387,7 +386,7 @@ class ReportAdmin(object):
                     selected_field = '%s__pk__in' % selected_field.split("__")[0]
                 elif isinstance(field_value, list):
                     if len(field_value) > 1:
-                        selected_field = '%s__in' % selected_field
+                        selected_field = '%s__icontains' % selected_field
                     elif len(field_value) == 1:
                         if field_value[0] == '':
                             choices = []
@@ -396,7 +395,7 @@ class ReportAdmin(object):
                                     for c in field[0].choices:
                                         choices.append(c[0])
                             field_value = choices
-                            selected_field = '%s__in' % selected_field
+                            selected_field = '%s__icontains' % selected_field
                         else:
                             field_value = field_value[0]
                     else:
@@ -414,7 +413,7 @@ class ReportAdmin(object):
             if not self.model:
                 title = _('Unnamed report')
             else:
-                title = force_unicode(self.model._meta.verbose_name_plural).lower().capitalize()
+                title = self.model._meta.verbose_name_plural.lower().capitalize()
         return title
 
     def get_render_context(self, request, extra_context={}, by_row=None):
@@ -500,13 +499,21 @@ class ReportAdmin(object):
 
 
     def render(self, request, extra_context={}):
+        from django.shortcuts import render
+
         context_or_response = self.get_render_context(request, extra_context)
         self.check_permissions(request)
 
         if isinstance(context_or_response, HttpResponse):
             return context_or_response
-        return render_to_response(self.template_name, context_or_response,
-                                  context_instance=RequestContext(request))
+        return render(
+            request,
+            self.template_name,
+            context_or_response,
+        )
+        #
+        # return render_to_response(self.template_name, context_or_response,
+        #                           context_instance=RequestContext(request))
 
     def has_report_totals(self):
         return not (not self.report_totals)
@@ -577,12 +584,12 @@ class ReportAdmin(object):
                                     base_model = pre_field.model
                                 else:
                                     base_model = pre_field.rel.to
-                            pre_field = base_model._meta.get_field_by_name(field_lookup)[0]
+                            pre_field = base_model._meta.get_field(field_lookup)
 
                         model_field = pre_field
                     else:
                         field_name = k.split("__")[0]
-                        model_field = opts.get_field_by_name(field_name)[0]
+                        model_field = opts.get_field(field_name)
 
                     if isinstance(model_field, (DateField, DateTimeField)):
                         form_fields.pop(k)
@@ -615,7 +622,7 @@ class ReportAdmin(object):
                                     field.choices.insert(0, ('', '---------'))
                                     field.initial = ''
 
-                        field.label = force_unicode(_(field.label))
+                        field.label = field.label
 
                 else:
                     if isinstance(v, (forms.BooleanField)):
@@ -631,7 +638,7 @@ class ReportAdmin(object):
                         setattr(field, 'as_boolean', True)
                     elif isinstance(v, (forms.DateField, forms.DateTimeField)):
                         field_name = k.split("__")[0]
-                        model_field = opts.get_field_by_name(field_name)[0]
+                        model_field = opts.get_field(field_name)
                         form_fields.pop(k)
                         field = RangeField(model_field.formfield)
                     else:
@@ -744,7 +751,7 @@ class ReportAdmin(object):
         header_row = self.get_empty_row_asdict(self.get_fields(), ReportValue(''))
         for report_total_field, fun in row_config.items():
             if hasattr(fun, 'caption'):
-                value = force_unicode(fun.caption)
+                value = fun.caption
             else:
                 value = '&nbsp;'
             header_row[report_total_field] = value
@@ -846,7 +853,7 @@ class ReportAdmin(object):
         else:
             groupby_fn = lambda x: None
 
-        qs_list.sort(key=groupby_fn)
+        # qs_list.sort(key=groupby_fn)
         g = groupby(qs_list, key=groupby_fn)
 
         row_report_totals = self.get_empty_row_asdict(self.report_totals, [])
