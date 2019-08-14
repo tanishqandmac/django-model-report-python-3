@@ -110,7 +110,7 @@ class HighchartRender(object):
             'avg': lambda vlist: sum(vlist) / len(vlist)
         }
         serie_operation = funcs_op[self.config['serie_op']]
-
+        grouper = None
         serie_data = []
         xAxis_categories = []
         yAxis_min = 0.
