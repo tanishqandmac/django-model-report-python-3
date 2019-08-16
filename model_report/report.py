@@ -12,10 +12,9 @@ from django.db.models.fields import DateTimeField, DateField
 from django.db.models import Q
 from django import forms
 from django.forms.models import fields_for_model
-try:
-    from django.db.models.fields.related import ForeignObjectRel
-except ImportError:  # Django < 1.8
-    from django.db.models.related import RelatedObject as ForeignObjectRel
+from django.db.models.fields.related import (
+    ForeignObjectRel, OneToOneField, lazy_related_operation, resolve_relation,
+)
 from django.db.models import ForeignKey
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -238,16 +237,17 @@ class ReportAdmin(object):
             try:
                 m2mfields = []
                 if '__' in field:
+                    is_m2m = None
                     pre_field = None
                     base_model = self.model
                     for field_lookup in field.split("__"):
                         if not pre_field:
-                            pre_field, _, _, is_m2m = base_model._meta.get_field(field_lookup)
+                            pre_field = base_model._meta.get_field(field_lookup)
                             if is_m2m:
                                 m2mfields.append(pre_field)
-                        elif isinstance(pre_field, ForeignObjectRel):
+                        elif isinstance(pre_field, (OneToOneField,ForeignObjectRel)):
                             base_model = pre_field.model
-                            pre_field = base_model._meta.get_field(field_lookup)
+                            # pre_field = base_model._meta.get_field(field_lookup[0])
                         else:
                             if is_date_field(pre_field):
                                 pre_field = pre_field
@@ -580,7 +580,7 @@ class ReportAdmin(object):
                         # for field_lookup in k.split("__")[:-1]:
                         for field_lookup in k.split("__"):
                             if pre_field:
-                                if isinstance(pre_field, ForeignObjectRel):
+                                if isinstance(pre_field, (OneToOneField,ForeignObjectRel)):
                                     base_model = pre_field.model
                                 else:
                                     base_model = pre_field.rel.to
@@ -672,7 +672,8 @@ class ReportAdmin(object):
         # [ 1, model_field] ]
         for index, model_field in dot_model_fields:
             model_ids = set([row[index] for row in resources])
-            if isinstance(model_field, (unicode, str)) and 'self.' in model_field:
+
+            if isinstance(model_field, (str)) and 'self.' in model_field:
                 model_qs = self.model.objects.filter(pk__in=model_ids)
             else:
                 model_qs = model_field.rel.to.objects.filter(pk__in=model_ids)

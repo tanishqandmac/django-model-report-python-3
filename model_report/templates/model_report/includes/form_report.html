@@ -1,38 +1,43 @@
 {% if form_groupby or form_filter or form_config %}
 
 <div class="form_filter">
-    <form method="GET" action="{{ request.path }}">
-      <div class="row">
-        <div class="col-sm-3 mrg15A">
-    {% include "model_report/includes/form_groupby.html" %}
+  <form method="GET" action="{{ request.path }}">
+
+    <div {% if report_rows %} id="demo-2" class="collapse" style="" {% endif %}>
+      <div class="panel">
+        <div class="panel-body">
+          <div class="row">
+            <div class="col-sm-6 mrg15A">
+              {% include "model_report/includes/form_filter.html" %}
+            </div>
+            <div class="col-sm-4 mrg15A">
+              {% include "model_report/includes/form_groupby.html" %}
+              {% include "model_report/includes/form_config.html" %}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-      <div class="col-sm-4 mrg15A">
-    {% include "model_report/includes/form_filter.html" %}
-    </div>
-      <div class="col-sm-3 mrg15A">
-    {% include "model_report/includes/form_config.html" %}
-    </div>
-    </div>
-    <hr>
+
     <p class="actions" >
       <div class="row">
         <div class="col-md-3">
-        <button type="submit" class="btn btn-info btn-block query mr-1">{{ submit_label|default:_("Get results") }}</button>
+          <button type="submit" class="btn btn-info btn-block query mr-1">{{ submit_label|default:_("Get results") }}</button>
         </div>
         {% if report_rows %}
         {% for export in report.exports %}
         <div class="col-md-3">
-        <button type="submit" class="btn btn-primary btn-block {{ export }} mr-1" name="export" value="{{ export }}">{{ export|title }}</button>
+          <button type="submit" class="btn btn-primary btn-block {{ export }} mr-1" name="export" value="{{ export }}">{{ export|title }}</button>
         </div>
         {% endfor %}
         <div class="col-md-3">
-        <button type="button" class="btn btn-success btn-block print mr-1" onclick="javascript:window.print()">{{ submit_label|default:_("Print") }}</button>
+          <button type="button" class="btn btn-success btn-block print mr-1" onclick="javascript:window.print()">{{ submit_label|default:_("Print") }}</button>
         </div>
         {% endif %}
-        </div>
+      </div>
     </p>
     <hr>
-    </form>
+  </form>
 </div>
 
 {% endif %}

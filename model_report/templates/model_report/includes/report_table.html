@@ -11,13 +11,13 @@
     <tbody>
         {% for gruper, rows in report_rows %}
             {% if gruper %}
-            <tr class="bg bg-blue-alt font font-white">
+            <tr class="bg bg-black font-white">
                 <td valign="middle" class="grouper" colspan="{{ column_labels|length }}" id="{{ gruper|default_if_none:_('Results')|slugify }}" >
                     <!-- {% if not report.onlytotals and not rows.0.is_report_totals and not report.is_export %}
                     <span class="result-collapsable expanded" row="row-{{ gruper|default_if_none:_('Results')|slugify }}">-</span>
                     {% endif %} -->
 
-                    <strong style="font-size:17px;">{{forloop.counter}}. {{ gruper|default_if_none:_('Results') }}</strong>
+                    <strong style="font-size:17px;">{{ gruper|default_if_none:_('Results') }}</strong>
                     {% if report_anchors and not report.parent_report %}<a style="float: right; color: #fff; font-weight: normal; font-size: 12px;" href="#data_container">{% trans "Go up" %}</a>{% endif %}
                 </td>
             </tr>

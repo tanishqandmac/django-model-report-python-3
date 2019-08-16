@@ -180,7 +180,7 @@ class HighchartRender(object):
             if len(serie_values) > max_length:
                 max_length = len(serie_values)
 
-        xAxis_categories = range(1, max_length + 1)
+        xAxis_categories = [i for i in range(1, max_length + 1)]
         self.model.chart.renderTo = 'container'
         self.model.chart.type = 'line'
 
@@ -237,6 +237,5 @@ class HighchartRender(object):
         json = json.replace('}]', '}\n]')
         json = json.replace("u'", "'")
         json = json.replace("b'", "'")
-        print (json)
         # json = HTMLEntitiesToUnicode(json)
         return json
