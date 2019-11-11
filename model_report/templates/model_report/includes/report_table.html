@@ -1,7 +1,17 @@
 {% load i18n model_report %}
+{% include 'elements/datatable.html' %}
+
+<script type="text/javascript">
+  $(document).ready( function () {
+      $('#search_result_datatable').DataTable({
+        "paging": false,
+      });
+  } );
+</script>
+
 <br><br>
-<table class="table table-bordered report">
-    <thead class="bg bg-primary">
+<table class="table table-bordered report" id="search_result_datatable">
+    <thead class="thead-light">
         <tr>
             {% for column_label in column_labels %}
                 <th valign="middle">{{ column_label }}</th>

@@ -10,27 +10,30 @@
             <div class="col-sm-6">
               {% include "model_report/includes/form_filter.html" %}
             </div>
-            <div class="col-sm-4">
+            <div class="col-sm-3">
               {% include "model_report/includes/form_groupby.html" %}
+              </div>
+              <div class="col-sm-3">
               {% include "model_report/includes/form_config.html" %}
             </div>
+              <div class="col-sm-12">
+                <div class="text-center">
+                  <button type="submit" class="btn btn-secondary query mr-1">{{ submit_label|default:_("Generate Report") }}</button>
+                </div>
+              </div>
           </div>
         </div>
       </div>
     </div>
-
     <p class="actions" >
       <div class="row">
-        <div class="col-md-3">
-          <button type="submit" class="btn btn-info btn-block query mr-1">{{ submit_label|default:_("Get results") }}</button>
-        </div>
         {% if report_rows %}
         {% for export in report.exports %}
-        <div class="col-md-3">
-          <button type="submit" class="btn btn-primary btn-block {{ export }} mr-1" name="export" value="{{ export }}">{{ export|title }}</button>
+        <div class="col-md-4">
+          <button type="submit" class="btn btn-dark btn-block {{ export }} mr-1" name="export" value="{{ export }}">{{ export|title }}</button>
         </div>
         {% endfor %}
-        <div class="col-md-3">
+        <div class="col-md-4">
           <button type="button" class="btn btn-success btn-block print mr-1" onclick="javascript:window.print()">{{ submit_label|default:_("Print") }}</button>
         </div>
         {% endif %}
