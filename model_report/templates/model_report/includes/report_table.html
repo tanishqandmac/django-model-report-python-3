@@ -5,6 +5,10 @@
   $(document).ready( function () {
       $('#search_result_datatable').DataTable({
         "paging": false,
+        "dom": "<'row'<'col-sm-3'B><'col-sm-6 text-center'l><'col-sm-3'f>><'row'<'col-sm-12'tr>><'row'<'col-sm-5'i><'col-sm-7'p>>",
+        "buttons": [
+        {% include 'elements/datatable-buttons.html' %}
+        ],
       });
   } );
 </script>
